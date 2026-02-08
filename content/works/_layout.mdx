@@ -10,35 +10,51 @@ import {
   References,
 } from "@canopy-iiif/app/ui/server";
 
-<Container variant="wide" className="canopy-work--layout">
+import { useEffect } from "react";
+import "/css/glossary.css";
 
-  {/* Primary: IIIF viewer display */}
-  <div className="canopy-work--primary">
-    <Viewer iiifContent={props.manifest.id} />
-  </div>
+export default function WorkLayout(props) {
+  useEffect(() => {
+    // Dynamically load glossary scripts after render
+    const loadGlossaryScripts = async () => {
+      try {
+        await import("/app/js/glossary-terms.js");
+        await import("/app/js/glossary-functions.js");
+        await import("/app/js/glossary-initialization.js");
+      } catch (error) {
+        console.error("Error loading glossary scripts:", error);
+      }
+    };
+    loadGlossaryScripts();
+  }, []);
 
-  {/* Secondary: metadata, summary, and glossary target area */}
-  <div className="canopy-work--secondary" id="glossary-content">
-    <header>
-      <Label manifest={props.manifest} as="h1"/>
-      <Summary manifest={props.manifest} as="p" className="canopy-lead"/>
-    </header>
+  return (
+    <>
+      <Container variant="wide" className="canopy-work--layout">
+        <div className="canopy-work--primary">
+          <Viewer iiifContent={props.manifest.id} />
+        </div>
 
-    <div>
-      <References/>
-      <Metadata manifest={props.manifest}/>
-      <RequiredStatement manifest={props.manifest}/>
-      <Id id={props.manifest.id}/>
-    </div>
-  </div>
-</Container>
+        {/* Marked section for glossary scanning */}
+        <div className="canopy-work--secondary">
+          <header>
+            <Label manifest={props.manifest} as="h1" />
+            <Summary manifest={props.manifest} as="p" className="canopy-lead" />
+          </header>
 
-<Container>
-  <h2>Related Items</h2>
-  <RelatedItems iiifContent={props.manifest.id} top={3} />
-</Container>
+          <div>
+            <References />
+            <Metadata manifest={props.manifest} />
+            <RequiredStatement manifest={props.manifest} />
+            <Id id={props.manifest.id} />
+          </div>
+        </div>
+      </Container>
 
-<link rel="stylesheet" href="/app/styles/custom.css"/>
-
-<script src="/app/js/glossary-terms.js"></script>
-<script src="/app/js/glossary-function.js"></script>
+      <Container>
+        <h2>Related Items</h2>
+        <RelatedItems iiifContent={props.manifest.id} top={3} />
+      </Container>
+    </>
+  );
+}
