@@ -1,3 +1,19 @@
+---
+type: work
+---
+
+<link rel="stylesheet" href="/styles/custom.css" />
+
+import {
+  Label,
+  Summary,
+  Metadata,
+  RequiredStatement,
+  References,
+} from "@canopy-iiif/app/ui/server";
+
+import { useEffect } from "react";
+
 export default function WorkLayout(props) {
   useEffect(() => {
     const secondary = document.querySelector(".canopy-work--secondary");
@@ -5,24 +21,26 @@ export default function WorkLayout(props) {
     if (!secondary || !glossaryContainer) return;
 
     const observer = new MutationObserver(async () => {
-      // Wait until metadata has been rendered
-      const metadataDiv = secondary.querySelector(".canopy-work--metadata");
+      // Wait until Summary and Metadata have rendered
       const summaryDiv = secondary.querySelector(".canopy-summary");
-      if (!metadataDiv && !summaryDiv) return;
+      const metadataDiv = secondary.querySelector(".canopy-work--metadata");
+
+      if (!summaryDiv && !metadataDiv) return;
 
       try {
         const { glossaryTerms } = await import("../../app/js/glossary-terms.js");
         const mod = await import("../../app/js/glossary-functions.js");
 
-        // Combine metadata + summary text
+        // Combine text from summary + metadata for matching
         const textToScan = [
           summaryDiv?.textContent || "",
           metadataDiv?.textContent || ""
         ].join(" ");
 
+        // Identify matches
         const matches = mod.identifyGlossaryMatches(textToScan, glossaryTerms);
 
-        // Highlight terms in metadata + summary
+        // Highlight terms in place
         if (summaryDiv) summaryDiv.innerHTML = mod.highlightGlossaryTermsString(summaryDiv.textContent, matches);
         if (metadataDiv) metadataDiv.innerHTML = mod.highlightGlossaryTermsString(metadataDiv.textContent, matches);
 
@@ -33,7 +51,7 @@ export default function WorkLayout(props) {
         if (summaryDiv) mod.attachGlossaryTooltips(summaryDiv);
         if (metadataDiv) mod.attachGlossaryTooltips(metadataDiv);
 
-        observer.disconnect(); // Stop after first run
+        observer.disconnect(); // Stop observing after first update
       } catch (e) {
         console.error("Glossary initialization failed:", e);
       }
@@ -54,11 +72,9 @@ export default function WorkLayout(props) {
         <div className="canopy-work--secondary">
           <header>
             <Label manifest={props.manifest} as="h1" />
-            {/* Keep summary rendered normally */}
             <Summary manifest={props.manifest} as="p" className="canopy-summary canopy-lead" />
           </header>
 
-          {/* Metadata rendered normally */}
           <Metadata manifest={props.manifest} className="canopy-work--metadata" />
 
           {/* Glossary panel */}
