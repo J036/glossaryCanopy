@@ -1,7 +1,7 @@
 const glossaryData = {
 //Test terms
 	"mica": "A rock group that shares a translucent, flaky, plate-like structure which reflects and refracts light.",
-	"British Colonial Indian": "In the British Colonial Indian Style Period, "Company style painting, also known as Kampani Kalam, emerged in the late eighteenth century during the British East India Company's expansion in India. This hybrid art form combined traditional Indian styles, particularly Mughal and Rajput miniature painting, with European techniques like linear perspective, chiaroscuro, and illusionism." — Delhi Art Gallery",
+	"British Colonial Indian": 'In the British Colonial Indian Style Period, "Company style painting, also known as Kampani Kalam, emerged in the late eighteenth century during the British East India Company expansion in India. This hybrid art form combined traditional Indian styles, particularly Mughal and Rajput miniature painting, with European techniques like linear perspective, chiaroscuro, and illusionism." — Delhi Art Gallery',
 //TD-IDF Terms
 		//tbd
 // U.S. Government Agencies
