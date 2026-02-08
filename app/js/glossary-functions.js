@@ -1,15 +1,16 @@
 export function identifyGlossaryMatches(text, glossary) {
   const matches = {};
   for (const term in glossary) {
-    const regex = new RegExp(`\\b${term}\\b`, "gi");
+    // Match the term with optional punctuation after it
+    const regex = new RegExp(`\\b(${term})\\b[.,;:]?`, "gi");
     if (regex.test(text)) matches[term] = glossary[term];
   }
   return matches;
 }
 
 // Function to highlight glossary terms 
-export function highlightGlossaryTerms(container, glossary) {
-  let html = container.innerHTML;
+export function highlightGlossaryTermsString(text, glossary) {
+  let html = text;
   for (const [term, definition] of Object.entries(glossary)) {
     const regex = new RegExp(`\\b(${term})\\b`, "gi");
     html = html.replace(
@@ -17,7 +18,7 @@ export function highlightGlossaryTerms(container, glossary) {
       `<span class="glossary-term" data-definition="${definition}">$1</span>`
     );
   }
-  container.innerHTML = html;
+  return html;
 }
 
 // Function to render glossary items at bottom of the page, border and some css elements missing from this I'm tired
