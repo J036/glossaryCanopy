@@ -15,10 +15,10 @@ import {
 import { useEffect } from "react";
 
 export default function WorkLayout(props) {
+  // Use MutationObserver to wait until content exists
   useEffect(() => {
     const secondary = document.querySelector(".canopy-work--secondary");
     const glossaryPanel = document.getElementById("glossary-section");
-
     if (!secondary || !glossaryPanel) return;
 
     const observer = new MutationObserver(async () => {
@@ -29,7 +29,8 @@ export default function WorkLayout(props) {
         } catch (e) {
           console.error("Glossary initialization failed:", e);
         }
-        observer.disconnect();
+        observer.disconnect(); // stop after first run
+      }
     });
 
     observer.observe(secondary, { childList: true, subtree: true });
@@ -37,14 +38,13 @@ export default function WorkLayout(props) {
     return () => observer.disconnect();
   }, []);
 
-return (
-   <>
+  return (
+    <>
       <Container variant="wide" className="canopy-work--layout">
         <div className="canopy-work--primary">
           <Viewer iiifContent={props.manifest.id} />
         </div>
 
-        {/* Marked section for glossary scanning */}
         <div className="canopy-work--secondary">
           <header>
             <Label manifest={props.manifest} as="h1" />
@@ -57,6 +57,9 @@ return (
             <RequiredStatement manifest={props.manifest} />
             <Id id={props.manifest.id} />
           </div>
+
+          {/* Glossary output */}
+          <div id="glossary-section"></div>
         </div>
       </Container>
 
