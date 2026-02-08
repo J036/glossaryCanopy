@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Glossary Test - Main Text</title>
-  <link rel="stylesheet" href="/styles/custom.css" />
+  <link rel="stylesheet" href="../../styles/custom.css" />
 </head>
 <body>
   <h1>Glossary Test - Main Text</h1>
@@ -20,8 +20,8 @@
   <script type="module">
     try {
       // Import existing glossary scripts
-      const termsModule = await import('./js/glossary-terms.js');
-      const functionsModule = await import('./js/glossary-functions.js');
+      const termsModule = await import('../../app/js/glossary-terms.js');
+      const functionsModule = await import('../../app/js/glossary-functions.js');
 
       const mainDiv = document.getElementById("main-text");
       const glossaryDiv = document.getElementById("glossary-section");
