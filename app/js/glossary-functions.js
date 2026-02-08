@@ -1,60 +1,57 @@
-export function identifyGlossaryMatches(text, glossary) {
-  const matches = {};
-  for (const term in glossary) {
-    // Match the term with optional punctuation after it
-    const regex = new RegExp(`\\b(${term})\\b[.,;:]?`, "gi");
-    if (regex.test(text)) matches[term] = glossary[term];
-  }
-  return matches;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glossary Test - Main Text</title>
+  <link rel="stylesheet" href="/styles/custom.css" />
+</head>
+<body>
+  <h1>Glossary Test - Main Text</h1>
 
-// Function to highlight glossary terms 
-export function highlightGlossaryTermsString(text, glossary) {
-  let html = text;
-  for (const [term, definition] of Object.entries(glossary)) {
-    const regex = new RegExp(`\\b(${term})\\b`, "gi");
-    html = html.replace(
-      regex,
-      `<span class="glossary-term" data-definition="${definition}">$1</span>`
-    );
-  }
-  return html;
-}
+  <div id="main-text">
+    <p>
+      The NPS manages many national parks. Scientists from NOAA study environmental changes.
+      This miniature painting was done on mica. IIIF is used for image interoperability.
+    </p>
+  </div>
 
-// Function to render glossary items at bottom of the page, border and some css elements missing from this I'm tired
-export function renderGlossary(glossary, container) {
-  if (!container) return;
-  container.innerHTML = "<h2>Glossary</h2>";
-  for (const [term, definition] of Object.entries(glossary)) {
-    const item = document.createElement("div");
-    item.className = "glossary-item";
-    item.id = `glossary-${term}`;
-    item.innerHTML = `<strong>${term}</strong>: ${definition}`;
-    container.appendChild(item);
-  }
-}
+  <div id="glossary-section"></div>
 
-// Function to handle tooltip overflow. Thanks ChatGPT.
-export function attachGlossaryTooltips(container) {
-  container.addEventListener("mouseover", (e) => {
-    const term = e.target.closest(".glossary-term");
-    if (!term) return;
+  <script type="module">
+    try {
+      // Import your existing glossary scripts
+      const termsModule = await import('./js/glossary-terms.js');
+      const functionsModule = await import('./js/glossary-functions.js');
 
-    const tooltip = document.createElement("div");
-    tooltip.textContent = term.getAttribute("data-definition");
-    tooltip.className = "glossary-tooltip";
-    document.body.appendChild(tooltip);
+      const mainDiv = document.getElementById("main-text");
+      const glossaryDiv = document.getElementById("glossary-section");
 
-    const rect = term.getBoundingClientRect();
-    const ttRect = tooltip.getBoundingClientRect();
-    let left = rect.left + rect.width / 2 - ttRect.width / 2;
-    let top = rect.bottom + 8;
-    left = Math.max(8, Math.min(left, window.innerWidth - ttRect.width - 8));
+      if (!mainDiv || !glossaryDiv) {
+        console.error("Main text or glossary section not found!");
+        return;
+      }
 
-    tooltip.style.left = `${left}px`;
-    tooltip.style.top = `${top}px`;
-    tooltip.style.position = "fixed";
+      // Get text content
+      const textToScan = mainDiv.textContent || "";
 
-    term.addEventListener("mouseleave", () => tooltip.remove(), { once: true });
-  });
-}
+      // Identify matches using your function
+      const matches = functionsModule.identifyGlossaryMatches(textToScan, termsModule.glossaryTerms);
+
+      // Highlight terms in the main text
+      mainDiv.innerHTML = functionsModule.highlightGlossaryTermsString(textToScan, matches);
+
+      // Render glossary panel
+      functionsModule.renderGlossary(matches, glossaryDiv);
+
+      // Attach tooltips
+      functionsModule.attachGlossaryTooltips(mainDiv);
+
+      console.log("Glossary matches:", matches);
+
+    } catch (e) {
+      console.error("Error loading glossary scripts:", e);
+    }
+  </script>
+</body>
+</html>
