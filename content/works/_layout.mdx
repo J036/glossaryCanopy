@@ -11,16 +11,16 @@ import {
 } from "@canopy-iiif/app/ui/server";
 
 import { useEffect } from "react";
-import "app/styles/custom.css";
+import "../../app/styles/custom.css";
 
 export default function WorkLayout(props) {
   useEffect(() => {
     // Dynamically load glossary scripts after render
     const loadGlossaryScripts = async () => {
       try {
-        await import("/app/js/glossary-terms.js");
-        await import("/app/js/glossary-functions.js");
-        await import("/app/js/glossary-initialization.js");
+        await import("../../app/js/glossary-terms.js");
+        await import("../../app/js/glossary-functions.js");
+        await import("../../app/js/glossary-initialization.js");
       } catch (error) {
         console.error("Error loading glossary scripts:", error);
       }
