@@ -1,99 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Glossary Test</title>
-  <link rel="stylesheet" href="/styles/custom.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glossary Test - Main Text</title>
+  <link rel="stylesheet" href="/styles/custom.css" />
 </head>
-
 <body>
   <h1>Glossary Test - Main Text</h1>
 
   <div id="main-text">
     <p>
-      The NPS manages many national parks. Scientists from NOAA study environmental changes.
-      This miniature painting was done on mica.
+      The NPS manages many national parks. Scientists from NOAA study environmental changes. This miniature painting was done on mica.
     </p>
   </div>
 
   <div id="glossary-section"></div>
 
   <script type="module">
-    // --- Glossary terms ---
-    const glossaryTerms = {
-      "NPS": "National Park Service",
-      "NOAA": "National Oceanic and Atmospheric Administration",
-      "mica": "A shiny mineral used as a substrate for miniature paintings",
-      "miniature": "A small painting, often on a decorative surface",
-      "IIIF": "International Image Interoperability Framework"
-    };
+    try {
+      // Import existing glossary scripts
+      const termsModule = await import('./js/glossary-terms.js');
+      const functionsModule = await import('./js/glossary-functions.js');
 
-    // --- Functions ---
-    function identifyGlossaryMatches(text, glossary) {
-      const matches = {};
-      for (const term in glossary) {
-        const regex = new RegExp(`\\b(${term})\\b`, "gi");
-        if (regex.test(text)) matches[term] = glossary[term];
+      const mainDiv = document.getElementById("main-text");
+      const glossaryDiv = document.getElementById("glossary-section");
+
+      if (!mainDiv || !glossaryDiv) {
+        console.error("Main text or glossary section not found!");
+        return;
       }
-      return matches;
+
+      // Get text content
+      const textToScan = mainDiv.textContent || "";
+
+      // Identify matches using your function
+      const matches = functionsModule.identifyGlossaryMatches(textToScan, termsModule.glossaryTerms);
+
+      // Highlight terms in the main text
+      mainDiv.innerHTML = functionsModule.highlightGlossaryTermsString(textToScan, matches);
+
+      // Render glossary panel
+      functionsModule.renderGlossary(matches, glossaryDiv);
+
+      // Attach tooltips
+      functionsModule.attachGlossaryTooltips(mainDiv);
+
+      console.log("Glossary matches:", matches);
+
+    } catch (e) {
+      console.error("Error loading glossary scripts:", e);
     }
-
-    function highlightGlossaryTermsString(text, glossary) {
-      let html = text;
-      for (const [term, definition] of Object.entries(glossary)) {
-        const regex = new RegExp(`\\b(${term})\\b`, "gi");
-        html = html.replace(regex, `<span class="glossary-term" data-definition="${definition}">$1</span>`);
-      }
-      return html;
-    }
-
-    function renderGlossary(glossary, container) {
-      container.innerHTML = "<h2>Glossary</h2>";
-      for (const [term, definition] of Object.entries(glossary)) {
-        const item = document.createElement("div");
-        item.className = "glossary-item";
-        item.id = `glossary-${term}`;
-        item.innerHTML = `<strong>${term}</strong>: ${definition}`;
-        container.appendChild(item);
-      }
-    }
-
-    function attachGlossaryTooltips(container) {
-      container.addEventListener("mouseover", e => {
-        const term = e.target.closest(".glossary-term");
-        if (!term) return;
-
-        const tooltip = document.createElement("div");
-        tooltip.textContent = term.getAttribute("data-definition");
-        tooltip.className = "glossary-tooltip";
-        document.body.appendChild(tooltip);
-
-        const rect = term.getBoundingClientRect();
-        const ttRect = tooltip.getBoundingClientRect();
-        let left = rect.left + rect.width / 2 - ttRect.width / 2;
-        let top = rect.bottom + 8;
-
-        left = Math.max(8, Math.min(left, window.innerWidth - ttRect.width - 8));
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-
-        term.addEventListener("mouseleave", () => tooltip.remove(), { once: true });
-      });
-    }
-
-    // --- Run glossary on main text ---
-    const mainDiv = document.getElementById("main-text");
-    const glossaryDiv = document.getElementById("glossary-section");
-
-    const textToScan = mainDiv.textContent || "";
-    const matches = identifyGlossaryMatches(textToScan, glossaryTerms);
-
-    mainDiv.innerHTML = highlightGlossaryTermsString(textToScan, matches);
-    renderGlossary(matches, glossaryDiv);
-    attachGlossaryTooltips(mainDiv);
-
-    console.log("Glossary matches:", matches);
   </script>
 </body>
 </html>
