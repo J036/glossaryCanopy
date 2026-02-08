@@ -1,81 +1,64 @@
----
-type: work
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glossary Test - Main Text</title>
 
-<link rel="stylesheet" href="../../styles/custom.css" />
+  <!-- GitHub Pages root paths -->
+  <link rel="stylesheet" href="/glossaryCanopy/app/styles/custom.css" />
 
-import {
-  Label,
-  Metadata,
-  References,
-} from "@canopy-iiif/app/ui/server";
+  <style>
+    /* fallback styles if not in custom.css */
+    .glossary-term { background-color: yellow; cursor: help; }
+    .glossary-tooltip {
+      position: fixed;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .glossary-item { border-bottom: 1px solid #eee; margin-bottom: 4px; padding: 2px 4px; }
+    #glossary-section { margin-top: 20px; border-top: 1px solid #aaa; padding-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Glossary Test - Main Text</h1>
 
-import { useEffect } from "react";
+  <div id="main-text">
+    <p>
+      The NPS manages many national parks. Scientists from NOAA study environmental changes.
+      This miniature painting was done on mica. IIIF is used for image interoperability.
+    </p>
+  </div>
 
-export default function WorkLayout(props) {
-  useEffect(() => {
-    // Delay to let Canopy render metadata
-    setTimeout(async () => {
-      try {
-        const secondary = document.querySelector(".canopy-work--secondary");
-        const glossaryContainer = document.getElementById("glossary-section");
-        if (!secondary || !glossaryContainer) return;
+  <div id="glossary-section"></div>
 
-        // Select the metadata container
-        // Fallback: first div inside secondary after header
-        const metadataDiv =
-          secondary.querySelector("div") ||
-          secondary;
+  <script type="module">
+    import { glossaryTerms } from '/glossaryCanopy/app/js/glossary-terms.js';
+    import { 
+      identifyGlossaryMatches,
+      highlightGlossaryTermsString,
+      renderGlossary,
+      attachGlossaryTooltips
+    } from '/glossaryCanopy/app/js/glossary-functions.js';
 
-        if (!metadataDiv) return;
+    const mainDiv = document.getElementById("main-text");
+    const glossaryDiv = document.getElementById("glossary-section");
 
-        // Import glossary terms and functions
-        const { glossaryTerms } = await import("../../app/js/glossary-terms.js");
-        const mod = await import("../../app/js/glossary-functions.js");
+    if (!mainDiv || !glossaryDiv) {
+      console.error("Main text or glossary section not found!");
+    } else {
+      const textToScan = mainDiv.textContent || "";
+      const matches = identifyGlossaryMatches(textToScan, glossaryTerms);
 
-        // Scan metadata text
-        const textToScan = metadataDiv.textContent || "";
+      mainDiv.innerHTML = highlightGlossaryTermsString(textToScan, matches);
+      renderGlossary(matches, glossaryDiv);
+      attachGlossaryTooltips(mainDiv);
 
-        const matches = mod.identifyGlossaryMatches(textToScan, glossaryTerms);
-
-        // Highlight terms in metadata
-        metadataDiv.innerHTML = mod.highlightGlossaryTermsString(textToScan, matches);
-
-        // Render glossary panel
-        mod.renderGlossary(matches, glossaryContainer);
-
-        // Attach tooltips
-        mod.attachGlossaryTooltips(metadataDiv);
-
-      } catch (e) {
-        console.error("Glossary initialization failed:", e);
-      }
-    }, 200); // small delay
-  }, []);
-
-  return (
-    <>
-      <Container variant="wide" className="canopy-work--layout">
-        <div className="canopy-work--primary">
-          <Viewer iiifContent={props.manifest.id} />
-        </div>
-
-        <div className="canopy-work--secondary">
-          <header>
-            <Label manifest={props.manifest} as="h1" />
-          </header>
-
-          <Metadata manifest={props.manifest} />
-
-          {/* Glossary panel */}
-          <div id="glossary-section"></div>
-        </div>
-      </Container>
-
-      <Container>
-        <h2>Related Items</h2>
-        <RelatedItems iiifContent={props.manifest.id} top={3} />
-      </Container>
-    </>
-  );
-}
+      console.log("Glossary matches:", matches);
+    }
+  </script>
+</body>
+</html>
