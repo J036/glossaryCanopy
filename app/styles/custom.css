@@ -35,6 +35,12 @@
   z-index: 9999;
 }
 
+.glossary-item {
+  margin-bottom: 4px;
+  padding: 2px 4px;
+  border-bottom: 1px solid #eee;
+}
+
 /* Mobile responsive tooltip */
 @media (max-width: 768px) {
     .glossary-term::after {
