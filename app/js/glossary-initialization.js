@@ -1,17 +1,15 @@
 // Initialize glossary functionality upon page load
-import {
-  identifyGlossaryMatches,
-  highlightGlossaryTerms,
-  renderGlossary,
-  attachGlossaryTooltips
-} from "./glossary-functions.js";
-import {glossaryTerms} from "./glossary-terms.js";
+import { glossaryTerms } from "./glossary-terms.js";
+import { identifyGlossaryMatches, 
+        highlightGlossaryTerms, 
+        renderGlossary, 
+        attachGlossaryTooltips } from "./glossary-functions.js";
 
-export default function initGlossary(container, glossaryPanel) {
-  if (!container || !glossaryTerms) return;
+export default function initGlossary(contentContainer, glossaryContainer) {
+  if (!contentContainer || !glossaryContainer || !glossaryTerms) return;
 
-  const matches = identifyGlossaryMatches(container.textContent, glossaryTerms);
-  highlightGlossaryTerms(container, matches);
-  renderGlossary(matches, glossaryPanel);
-  attachGlossaryTooltips(container);
+  const matches = identifyGlossaryMatches(contentContainer.textContent, glossaryTerms);
+  highlightGlossaryTerms(contentContainer, matches);
+  renderGlossary(matches, glossaryContainer);
+  attachGlossaryTooltips(contentContainer);
 }
