@@ -1,3 +1,10 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const content = document.querySelector("#glossary-content");
+  if (content && typeof glossaryTerms !== "undefined") {
+    identifyGlossaryMatches(content, glossaryTerms);
+  }
+});
+
 function identifyGlossaryMatches(text, glossary) {
   const matches = {};
 
