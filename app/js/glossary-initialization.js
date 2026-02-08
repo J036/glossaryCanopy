@@ -5,7 +5,7 @@ import {
   renderGlossary,
   attachGlossaryTooltips
 } from "./glossary-functions.js";
-import { glossaryTerms } from "./glossary-terms.js";
+import {glossaryTerms} from "./glossary-terms.js";
 
 export default function initGlossary(container, glossaryPanel) {
   if (!container || !glossaryTerms) return;
