@@ -4,8 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Glossary Test - Main Text</title>
-  <!-- Reference your existing CSS file -->
+
+  <!-- Use your custom CSS -->
   <link rel="stylesheet" href="../app/styles/custom.css" />
+
+  <style>
+    /* fallback styles if not in custom.css */
+    .glossary-term { background-color: yellow; cursor: help; }
+    .glossary-tooltip {
+      position: fixed;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .glossary-item { border-bottom: 1px solid #eee; margin-bottom: 4px; padding: 2px 4px; }
+    #glossary-section { margin-top: 20px; border-top: 1px solid #aaa; padding-top: 10px; }
+  </style>
 </head>
 <body>
   <h1>Glossary Test - Main Text</h1>
@@ -21,31 +37,27 @@
   <!-- Glossary panel -->
   <div id="glossary-section"></div>
 
-  <!-- Script using JS files -->
+  <!-- Load your JS files -->
   <script type="module">
-    try {
-      // Import your existing glossary scripts
-      import { glossaryTerms } from '../app/js/glossary-terms.js';
-      import { 
-        identifyGlossaryMatches,
-        highlightGlossaryTermsString,
-        renderGlossary,
-        attachGlossaryTooltips
-      } from '../app/js/glossary-functions.js';
+    import { glossaryTerms } from '../app/js/glossary-terms.js';
+    import { 
+      identifyGlossaryMatches,
+      highlightGlossaryTermsString,
+      renderGlossary,
+      attachGlossaryTooltips
+    } from '../app/js/glossary-functions.js';
 
-      const mainDiv = document.getElementById("main-text");
-      const glossaryDiv = document.getElementById("glossary-section");
+    const mainDiv = document.getElementById("main-text");
+    const glossaryDiv = document.getElementById("glossary-section");
 
-      if (!mainDiv || !glossaryDiv) {
-        console.error("Main text or glossary section not found!");
-        return;
-      }
-
+    if (!mainDiv || !glossaryDiv) {
+      console.error("Main text or glossary section not found!");
+    } else {
       // Scan main text
       const textToScan = mainDiv.textContent || "";
       const matches = identifyGlossaryMatches(textToScan, glossaryTerms);
 
-      // Highlight main text
+      // Highlight terms
       mainDiv.innerHTML = highlightGlossaryTermsString(textToScan, matches);
 
       // Populate glossary panel
@@ -55,9 +67,6 @@
       attachGlossaryTooltips(mainDiv);
 
       console.log("Glossary matches:", matches);
-
-    } catch (e) {
-      console.error("Error loading glossary scripts:", e);
     }
   </script>
 </body>
