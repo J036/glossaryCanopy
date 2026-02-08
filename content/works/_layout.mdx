@@ -1,54 +1,48 @@
----
-type: work
----
-
-<link rel="stylesheet" href="/styles/custom.css" />
-
-import {
-  Label,
-  Summary,
-  Metadata,
-  RequiredStatement,
-  References,
-} from "@canopy-iiif/app/ui/server";
-
-import { useEffect } from "react";
-
 export default function WorkLayout(props) {
-  // Extract all metadata + summary text from manifest
-  const metadataText = [
-    props.manifest.summary || "",
-    ...(props.manifest.metadata || []).map(m => `${m.label}: ${m.value}`)
-  ].join(" ");
-
   useEffect(() => {
+    const secondary = document.querySelector(".canopy-work--secondary");
     const glossaryContainer = document.getElementById("glossary-section");
-    const metadataContainer = document.getElementById("metadata-highlighted");
-    if (!glossaryContainer || !metadataContainer) return;
+    if (!secondary || !glossaryContainer) return;
 
-    const loadGlossary = async () => {
+    const observer = new MutationObserver(async () => {
+      // Wait until metadata has been rendered
+      const metadataDiv = secondary.querySelector(".canopy-work--metadata");
+      const summaryDiv = secondary.querySelector(".canopy-summary");
+      if (!metadataDiv && !summaryDiv) return;
+
       try {
         const { glossaryTerms } = await import("../../app/js/glossary-terms.js");
         const mod = await import("../../app/js/glossary-functions.js");
 
-        // Identify matches
-        const matches = mod.identifyGlossaryMatches(metadataText, glossaryTerms);
+        // Combine metadata + summary text
+        const textToScan = [
+          summaryDiv?.textContent || "",
+          metadataDiv?.textContent || ""
+        ].join(" ");
 
-        // Highlight metadata text and inject into container
-        metadataContainer.innerHTML = mod.highlightGlossaryTermsString(metadataText, matches);
+        const matches = mod.identifyGlossaryMatches(textToScan, glossaryTerms);
 
-        // Render glossary panel
+        // Highlight terms in metadata + summary
+        if (summaryDiv) summaryDiv.innerHTML = mod.highlightGlossaryTermsString(summaryDiv.textContent, matches);
+        if (metadataDiv) metadataDiv.innerHTML = mod.highlightGlossaryTermsString(metadataDiv.textContent, matches);
+
+        // Populate glossary panel
         mod.renderGlossary(matches, glossaryContainer);
 
         // Attach tooltips
-        mod.attachGlossaryTooltips(metadataContainer);
+        if (summaryDiv) mod.attachGlossaryTooltips(summaryDiv);
+        if (metadataDiv) mod.attachGlossaryTooltips(metadataDiv);
+
+        observer.disconnect(); // Stop after first run
       } catch (e) {
         console.error("Glossary initialization failed:", e);
       }
-    };
+    });
 
-    loadGlossary();
-  }, [metadataText]);
+    observer.observe(secondary, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
@@ -60,10 +54,12 @@ export default function WorkLayout(props) {
         <div className="canopy-work--secondary">
           <header>
             <Label manifest={props.manifest} as="h1" />
+            {/* Keep summary rendered normally */}
+            <Summary manifest={props.manifest} as="p" className="canopy-summary canopy-lead" />
           </header>
 
-          {/* Metadata + glossary highlights */}
-          <div id="metadata-highlighted"></div>
+          {/* Metadata rendered normally */}
+          <Metadata manifest={props.manifest} className="canopy-work--metadata" />
 
           {/* Glossary panel */}
           <div id="glossary-section"></div>
