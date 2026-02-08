@@ -4,22 +4,38 @@ type: work
 
 <link rel="stylesheet" href="/styles/custom.css" />
 
-seEffect(() => {
-  const timer = setTimeout(async () => {
+import {
+  Label,
+  Summary,
+  Metadata,
+  RequiredStatement,
+  References,
+} from "@canopy-iiif/app/ui/server";
+
+import { useEffect } from "react";
+
+export default function WorkLayout(props) {
+  useEffect(() => {
     const secondary = document.querySelector(".canopy-work--secondary");
     const glossaryPanel = document.getElementById("glossary-section");
+
     if (!secondary || !glossaryPanel) return;
 
-    try {
-      const init = await import("../../app/js/glossary-initialization.js");
-      init.default(secondary, glossaryPanel);
-    } catch (e) {
-      console.error("Glossary initialization failed", e);
-    }
-  }, 500); // wait 0.5s for content to render
+    const observer = new MutationObserver(async () => {
+      if (secondary.textContent.trim().length > 0) {
+        try {
+          const init = await import("../../app/js/glossary-initialization.js");
+          init.default(secondary, glossaryPanel);
+        } catch (e) {
+          console.error("Glossary initialization failed:", e);
+        }
+        observer.disconnect();
+    });
 
-  return () => clearTimeout(timer);
-}, []);
+    observer.observe(secondary, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
 
 return (
    <>
