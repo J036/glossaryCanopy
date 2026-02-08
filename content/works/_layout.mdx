@@ -4,29 +4,23 @@ type: work
 
 <link rel="stylesheet" href="/styles/custom.css" />
 
-import {
-  Label,
-  Summary,
-  Metadata,
-  RequiredStatement,
-  References,
-} from "@canopy-iiif/app/ui/server";
-
 import { useEffect } from "react";
 
 export default function WorkLayout(props) {
   useEffect(() => {
-    // Dynamically load glossary scripts after render
-    const loadGlossaryScripts = async () => {
+    const loadGlossary = async () => {
       try {
-        await import("../../app/js/glossary-terms.js");
-        await import("../../app/js/glossary-functions.js");
-        await import("../../app/js/glossary-initialization.js");
-      } catch (error) {
-        console.error("Error loading glossary scripts:", error);
+        const init = await import("../../app/js/glossary-initialization.js");
+        init.default(
+          document.querySelector(".canopy-work--secondary"), // content container
+          document.getElementById("glossary-section")        // glossary panel
+        );
+      } catch (e) {
+        console.error("Glossary initialization failed:", e);
       }
     };
-    loadGlossaryScripts();
+
+    loadGlossary();
   }, []);
 
   return (
