@@ -15,28 +15,40 @@ import {
 import { useEffect } from "react";
 
 export default function WorkLayout(props) {
-  // Use MutationObserver to wait until content exists
+  // Extract all metadata + summary text from manifest
+  const metadataText = [
+    props.manifest.summary || "",
+    ...(props.manifest.metadata || []).map(m => `${m.label}: ${m.value}`)
+  ].join(" ");
+
   useEffect(() => {
-    const secondary = document.querySelector(".canopy-work--secondary");
-    const glossaryPanel = document.getElementById("glossary-section");
-    if (!secondary || !glossaryPanel) return;
+    const glossaryContainer = document.getElementById("glossary-section");
+    const metadataContainer = document.getElementById("metadata-highlighted");
+    if (!glossaryContainer || !metadataContainer) return;
 
-    const observer = new MutationObserver(async () => {
-      if (secondary.textContent.trim().length > 0) {
-        try {
-          const init = await import("../../app/js/glossary-initialization.js");
-          init.default(secondary, glossaryPanel);
-        } catch (e) {
-          console.error("Glossary initialization failed:", e);
-        }
-        observer.disconnect(); // stop after first run
+    const loadGlossary = async () => {
+      try {
+        const { glossaryTerms } = await import("../../app/js/glossary-terms.js");
+        const mod = await import("../../app/js/glossary-functions.js");
+
+        // Identify matches
+        const matches = mod.identifyGlossaryMatches(metadataText, glossaryTerms);
+
+        // Highlight metadata text and inject into container
+        metadataContainer.innerHTML = mod.highlightGlossaryTermsString(metadataText, matches);
+
+        // Render glossary panel
+        mod.renderGlossary(matches, glossaryContainer);
+
+        // Attach tooltips
+        mod.attachGlossaryTooltips(metadataContainer);
+      } catch (e) {
+        console.error("Glossary initialization failed:", e);
       }
-    });
+    };
 
-    observer.observe(secondary, { childList: true, subtree: true });
-
-    return () => observer.disconnect();
-  }, []);
+    loadGlossary();
+  }, [metadataText]);
 
   return (
     <>
@@ -48,17 +60,12 @@ export default function WorkLayout(props) {
         <div className="canopy-work--secondary">
           <header>
             <Label manifest={props.manifest} as="h1" />
-            <Summary manifest={props.manifest} as="p" className="canopy-lead" />
           </header>
 
-          <div>
-            <References />
-            <Metadata manifest={props.manifest} />
-            <RequiredStatement manifest={props.manifest} />
-            <Id id={props.manifest.id} />
-          </div>
+          {/* Metadata + glossary highlights */}
+          <div id="metadata-highlighted"></div>
 
-          {/* Glossary output */}
+          {/* Glossary panel */}
           <div id="glossary-section"></div>
         </div>
       </Container>
