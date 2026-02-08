@@ -15,52 +15,53 @@ import {
 import { useEffect } from "react";
 
 export default function WorkLayout(props) {
-  useEffect(() => {
-    const secondary = document.querySelector(".canopy-work--secondary");
-    const glossaryContainer = document.getElementById("glossary-section");
-    if (!secondary || !glossaryContainer) return;
+ useEffect(() => {
+  const secondary = document.querySelector(".canopy-work--secondary");
+  const glossaryContainer = document.getElementById("glossary-section");
+  if (!secondary || !glossaryContainer) return;
 
-    const observer = new MutationObserver(async () => {
-      // Wait until Summary and Metadata have rendered
-      const summaryDiv = secondary.querySelector(".canopy-summary");
-      const metadataDiv = secondary.querySelector(".canopy-work--metadata");
+  console.log("Secondary container found:", secondary);
+  console.log("Glossary container found:", glossaryContainer);
 
-      if (!summaryDiv && !metadataDiv) return;
+  const observer = new MutationObserver(async () => {
+    const summaryDiv = secondary.querySelector(".canopy-summary");
+    const metadataDiv = secondary.querySelector(".canopy-work--metadata");
 
-      try {
-        const { glossaryTerms } = await import("../../app/js/glossary-terms.js");
-        const mod = await import("../../app/js/glossary-functions.js");
+    console.log("Summary found:", summaryDiv);
+    console.log("Metadata found:", metadataDiv);
 
-        // Combine text from summary + metadata for matching
-        const textToScan = [
-          summaryDiv?.textContent || "",
-          metadataDiv?.textContent || ""
-        ].join(" ");
+    if (!summaryDiv && !metadataDiv) return;
 
-        // Identify matches
-        const matches = mod.identifyGlossaryMatches(textToScan, glossaryTerms);
+    try {
+      const { glossaryTerms } = await import("../../app/js/glossary-terms.js");
+      const mod = await import("../../app/js/glossary-functions.js");
 
-        // Highlight terms in place
-        if (summaryDiv) summaryDiv.innerHTML = mod.highlightGlossaryTermsString(summaryDiv.textContent, matches);
-        if (metadataDiv) metadataDiv.innerHTML = mod.highlightGlossaryTermsString(metadataDiv.textContent, matches);
+      const textToScan = [
+        summaryDiv?.textContent || "",
+        metadataDiv?.textContent || ""
+      ].join(" ");
 
-        // Populate glossary panel
-        mod.renderGlossary(matches, glossaryContainer);
+      console.log("Text to scan:", textToScan);
 
-        // Attach tooltips
-        if (summaryDiv) mod.attachGlossaryTooltips(summaryDiv);
-        if (metadataDiv) mod.attachGlossaryTooltips(metadataDiv);
+      const matches = mod.identifyGlossaryMatches(textToScan, glossaryTerms);
+      console.log("Glossary matches found:", matches);
 
-        observer.disconnect(); // Stop observing after first update
-      } catch (e) {
-        console.error("Glossary initialization failed:", e);
-      }
-    });
+      if (summaryDiv) summaryDiv.innerHTML = mod.highlightGlossaryTermsString(summaryDiv.textContent, matches);
+      if (metadataDiv) metadataDiv.innerHTML = mod.highlightGlossaryTermsString(metadataDiv.textContent, matches);
 
-    observer.observe(secondary, { childList: true, subtree: true });
+      mod.renderGlossary(matches, glossaryContainer);
+      if (summaryDiv) mod.attachGlossaryTooltips(summaryDiv);
+      if (metadataDiv) mod.attachGlossaryTooltips(metadataDiv);
 
-    return () => observer.disconnect();
-  }, []);
+      observer.disconnect();
+    } catch (e) {
+      console.error("Glossary initialization failed:", e);
+    }
+  });
+
+  observer.observe(secondary, { childList: true, subtree: true });
+  return () => observer.disconnect();
+}, []);
 
   return (
     <>
