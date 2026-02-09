@@ -2,8 +2,6 @@
 type: work
 ---
 
-<link rel="stylesheet" href="/glossaryCanopy/app/styles/custom.css" />
-
 import {
   Label,
   Summary,
@@ -12,51 +10,16 @@ import {
   References,
 } from "@canopy-iiif/app/ui/server";
 
-import { useEffect } from "react";
-
 export default function WorkLayout(props) {
-
-  useEffect(() => {
-    const secondary = document.querySelector(".canopy-work--secondary");
-    const glossaryDiv = document.getElementById("glossary-section");
-
-    if (!secondary || !glossaryDiv) return;
-
-    const loadGlossary = async () => {
-      try {
-        const { glossaryTerms } = await import("/glossaryCanopy/app/js/glossary-terms.js");
-        const {
-          identifyGlossaryMatches,
-          highlightGlossaryTermsString,
-          renderGlossary,
-          attachGlossaryTooltips
-        } = await import("/glossaryCanopy/app/js/glossary-functions.js");
-
-        const textToScan = secondary.textContent || "";
-        const matches = identifyGlossaryMatches(textToScan, glossaryTerms);
-
-        // Highlight the main text
-        secondary.innerHTML = highlightGlossaryTermsString(textToScan, matches);
-
-        // Render the glossary panel
-        renderGlossary(matches, glossaryDiv);
-
-        // Attach tooltip functionality
-        attachGlossaryTooltips(secondary);
-
-      } catch (e) {
-        console.error("Glossary initialization failed:", e);
-      }
-    };
-
-    loadGlossary();
-  }, []);
-
   return (
     <>
       <Container variant="wide" className="canopy-work--layout">
         <div className="canopy-work--primary">
           <Viewer iiifContent={props.manifest.id} />
+          <Glossary 
+            contentSelector=".canopy-work--secondary"
+            glossarySelector="#glossary-section"
+          />
         </div>
 
         <div className="canopy-work--secondary">
@@ -65,16 +28,15 @@ export default function WorkLayout(props) {
             <Summary manifest={props.manifest} as="p" className="canopy-lead" />
           </header>
 
-          {/* Metadata and references */}
           <div>
             <References />
             <Metadata manifest={props.manifest} />
             <RequiredStatement manifest={props.manifest} />
           </div>
 
-          {/* Glossary panel */}
-          <div id="glossary-section"></div>
         </div>
+
+          <div id="glossary-section"></div>
       </Container>
 
       <Container>
@@ -82,5 +44,6 @@ export default function WorkLayout(props) {
         <RelatedItems iiifContent={props.manifest.id} top={3} />
       </Container>
     </>
-  );
+
+);
 }
