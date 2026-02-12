@@ -2,7 +2,7 @@ import React, {useEffect} from "react";
 import {glossaryTerms} from "../js/glossary-terms.js";
 import {
   attachGlossaryTooltips,
-  highlightGlossaryTermsString,
+  highlightGlossaryTerms,
   identifyGlossaryMatches,
   renderGlossary,
 } from "../js/glossary-functions.js";
@@ -20,15 +20,42 @@ export default function GlossaryClient({
     const content = document.querySelector(contentSelector);
     const glossaryContainer = document.querySelector(glossarySelector);
 
-    if (!content || !glossaryContainer) return;
+    if (!(content instanceof HTMLElement) || !(glossaryContainer instanceof HTMLElement)) {
+      return;
+    }
 
-    const textToScan = content.textContent || "";
-    if (!textToScan.trim()) return;
+    const observerConfig: MutationObserverInit = {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    };
 
-    const matches = identifyGlossaryMatches(textToScan, glossaryTerms);
-    content.innerHTML = highlightGlossaryTermsString(textToScan, matches);
-    renderGlossary(matches, glossaryContainer as HTMLElement);
-    attachGlossaryTooltips(content);
+    let observer: MutationObserver | null = null;
+
+    const applyGlossary = () => {
+      observer?.disconnect();
+
+      const textToScan = content.textContent || "";
+      if (textToScan.trim()) {
+        const matches = identifyGlossaryMatches(textToScan, glossaryTerms);
+        highlightGlossaryTerms(content, matches);
+        renderGlossary(matches, glossaryContainer);
+        attachGlossaryTooltips(content);
+      } else {
+        glossaryContainer.innerHTML = "";
+      }
+
+      observer?.observe(content, observerConfig);
+    };
+
+    observer = new MutationObserver(mutations => {
+      if (!mutations.length) return;
+      applyGlossary();
+    });
+
+    applyGlossary();
+
+    return () => observer?.disconnect();
   }, [contentSelector, glossarySelector]);
 
   return null;
